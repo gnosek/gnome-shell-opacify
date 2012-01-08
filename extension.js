@@ -40,5 +40,11 @@ function init() {
                 }
             }
         });
+
+        the_window.connect('raised', function(the_window) {
+            global.get_window_actors().forEach(function(wa) {
+                wa.opacity = 255;
+            });
+        });
     });
 }
