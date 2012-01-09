@@ -1,6 +1,15 @@
-let opacify_enabled = false;
+let on_window_created;
 
 function init() {
+}
+
+function reset_opacity() {
+    global.get_window_actors().forEach(function(wa) {
+        wa.opacity = 255;
+    });
+}
+
+function enable() {
     function overlaps(rectA, rectB) {
         var a_x1 = rectA.x;
         var a_x2 = rectA.x + rectA.width;
@@ -20,12 +29,8 @@ function init() {
     // existing windows apparently emit this signal too
     // or simply the extension is loaded before they're created
     // anyway, there's no need to look up existing windows
-    global.display.connect('window-created', function(display, the_window) {
-        the_window.connect('focus', function(the_window) {
-            if (!opacify_enabled) {
-                return;
-            }
-
+    on_window_created = global.display.connect('window-created', function(display, the_window) {
+        var on_focus = the_window.connect('focus', function(the_window) {
             var r = the_window.get_outer_rect();
             var all_windows = global.get_window_actors();
             var above_current = true;
@@ -47,24 +52,27 @@ function init() {
             }
         });
 
-        the_window.connect('raised', function(the_window) {
-            if (!opacify_enabled) {
-                return;
-            }
-            global.get_window_actors().forEach(function(wa) {
-                wa.opacity = 255;
-            });
-        });
+        var on_raised = the_window.connect('raised', reset_opacity);
+
+        the_window._opacify = {
+            on_focus: on_focus,
+            on_raised: on_raised
+        };
     });
 }
 
-function enable() {
-    opacify_enabled = true;
-}
-
 function disable() {
-    opacify_enabled = false;
+    if (on_window_created) {
+        global.display.disconnect(on_window_created);
+    }
     global.get_window_actors().forEach(function(wa) {
+        var win = wa.get_meta_window();
+        var handlers = win._opacify;
+        if (handlers) {
+            for (var name in handlers) {
+                win.disconnect(handlers[name]);
+            }
+        }
         wa.opacity = 255;
     });
 }
