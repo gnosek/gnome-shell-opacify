@@ -1,3 +1,5 @@
+let opacify_enabled = false;
+
 function init() {
     function overlaps(rectA, rectB) {
         var a_x1 = rectA.x;
@@ -20,6 +22,10 @@ function init() {
     // anyway, there's no need to look up existing windows
     global.display.connect('window-created', function(display, the_window) {
         the_window.connect('focus', function(the_window) {
+            if (!opacify_enabled) {
+                return;
+            }
+
             var r = the_window.get_outer_rect();
             var all_windows = global.get_window_actors();
             var above_current = true;
@@ -42,6 +48,9 @@ function init() {
         });
 
         the_window.connect('raised', function(the_window) {
+            if (!opacify_enabled) {
+                return;
+            }
             global.get_window_actors().forEach(function(wa) {
                 wa.opacity = 255;
             });
@@ -50,8 +59,13 @@ function init() {
 }
 
 function enable() {
+    opacify_enabled = true;
 }
 
 function disable() {
+    opacify_enabled = false;
+    global.get_window_actors().forEach(function(wa) {
+        wa.opacity = 255;
+    });
 }
 
