@@ -26,10 +26,7 @@ function enable() {
         return (a_x1 < b_x2 && a_x2 > b_x1 && a_y1 < b_y2 && a_y2 > b_y1);
     }
 
-    // existing windows apparently emit this signal too
-    // or simply the extension is loaded before they're created
-    // anyway, there's no need to look up existing windows
-    on_window_created = global.display.connect('window-created', function(display, the_window) {
+    function window_created(__unused_display, the_window) {
         var on_focus = the_window.connect('focus', function(the_window) {
             var r = the_window.get_outer_rect();
             var all_windows = global.get_window_actors();
@@ -58,6 +55,11 @@ function enable() {
             on_focus: on_focus,
             on_raised: on_raised
         };
+    }
+
+    on_window_created = global.display.connect('window-created', window_created);
+    global.get_window_actors().forEach(function(wa) {
+        window_created(null, wa.get_meta_window());
     });
 }
 
