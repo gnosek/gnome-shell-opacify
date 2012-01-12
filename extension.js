@@ -31,10 +31,16 @@ function enable() {
             var r = the_window.get_outer_rect();
             var all_windows = global.get_window_actors();
             var above_current = true;
+            var current_workspace = global.screen.get_active_workspace();
 
             for (var i = all_windows.length - 1; i >= 0; i--) {
                 var actor = all_windows[i];
                 var meta_window = actor.get_meta_window();
+
+                if (meta_window.get_workspace() != current_workspace) {
+                    continue;
+                }
+
                 if (meta_window == the_window) {
                     above_current = false;
                     actor.opacity = 255;
