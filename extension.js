@@ -17,9 +17,9 @@ var handled_window_types = [
 //  Meta.WindowType.DROPDOWN_MENU,
 //  Meta.WindowType.POPUP_MENU,
 //  Meta.WindowType.TOOLTIP,
-  Meta.WindowType.NOTIFICATION,
-  Meta.WindowType.COMBO,
-  Meta.WindowType.DND,
+//  Meta.WindowType.NOTIFICATION,
+//  Meta.WindowType.COMBO,
+//  Meta.WindowType.DND,
 //  Meta.WindowType.OVERRIDE_OTHER
 ];
 
