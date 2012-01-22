@@ -1,7 +1,30 @@
-let on_window_created;
-let on_restacked;
+const Meta = imports.gi.Meta;
+
 var opacity_transparent = 128;
 var opacity_opaque = 255;
+var handled_window_types = [
+  Meta.WindowType.NORMAL,
+  Meta.WindowType.DESKTOP,
+  Meta.WindowType.DOCK,
+  Meta.WindowType.DIALOG,
+  Meta.WindowType.MODAL_DIALOG,
+  Meta.WindowType.TOOLBAR,
+  Meta.WindowType.MENU,
+  Meta.WindowType.UTILITY,
+  Meta.WindowType.SPLASHSCREEN,
+
+  /* override redirect window types: */
+//  Meta.WindowType.DROPDOWN_MENU,
+//  Meta.WindowType.POPUP_MENU,
+//  Meta.WindowType.TOOLTIP,
+  Meta.WindowType.NOTIFICATION,
+  Meta.WindowType.COMBO,
+  Meta.WindowType.DND,
+  Meta.WindowType.OVERRIDE_OTHER
+];
+
+let on_window_created;
+let on_restacked;
 
 function init() {
 }
@@ -38,6 +61,18 @@ function enable() {
         window_actor.opacity = opacity_opaque;
     }
 
+    function handled_window_type(wtype) {
+        for (var i = 0; i < handled_window_types.length; i++) {
+            hwtype = handled_window_types[i];
+            if (hwtype == wtype) {
+                return true;
+            } else if (hwtype > wtype) {
+                return false;
+            }
+        }
+        return false;
+    }
+
     function updateOpacity(window_hint) {
         let above_current = new Array();
 
@@ -51,7 +86,9 @@ function enable() {
             var wksp_index = wksp.index();
             var focused_meta_win = wksp._opacify_focused_window;
 
-            if (above_current[wksp_index] && overlaps(focused_meta_win, meta_win)) {
+            if (above_current[wksp_index] &&
+                overlaps(focused_meta_win, meta_win) &&
+                handled_window_type(meta_win.get_window_type())) {
                 setTransparent(wa);
             } else {
                 setOpaque(wa);
