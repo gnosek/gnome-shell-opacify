@@ -8,7 +8,7 @@ This extension implements core of the compiz Opacify plugin, i.e. inactive windo
 
 Due to limitations of the Gnome Shell (as of 3.2), the extension is not easily configurable and the inactive opacity is hardcoded at 50%. To change it, edit the line saying:
 
-    actor.opacity = 128
+    var opacity_transparent = 128;
 
 to anything you want (0 is invisible, 255 is fully opaque).
 

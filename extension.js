@@ -1,16 +1,20 @@
 let on_window_created;
+let on_restacked;
+var opacity_transparent = 128;
+var opacity_opaque = 255;
 
 function init() {
 }
 
-function reset_opacity() {
-    global.get_window_actors().forEach(function(wa) {
-        wa.opacity = 255;
-    });
-}
-
 function enable() {
-    function overlaps(rectA, rectB) {
+    function overlaps(winA, winB) {
+        if (!winA || !winB) {
+            return false;
+        }
+
+        var rectA = winA.get_outer_rect();
+        var rectB = winB.get_outer_rect();
+
         var a_x1 = rectA.x;
         var a_x2 = rectA.x + rectA.width;
         var a_y1 = rectA.y;
@@ -26,60 +30,76 @@ function enable() {
         return (a_x1 < b_x2 && a_x2 > b_x1 && a_y1 < b_y2 && a_y2 > b_y1);
     }
 
-    function window_created(__unused_display, the_window) {
-        var on_focus = the_window.connect('focus', function(the_window) {
-            var r = the_window.get_outer_rect();
-            var all_windows = global.get_window_actors();
-            var above_current = true;
-            var current_workspace = global.screen.get_active_workspace();
+    function setTransparent(window_actor) {
+        window_actor.opacity = opacity_transparent;
+    }
 
-            for (var i = all_windows.length - 1; i >= 0; i--) {
-                var actor = all_windows[i];
-                var meta_window = actor.get_meta_window();
+    function setOpaque(window_actor) {
+        window_actor.opacity = opacity_opaque;
+    }
 
-                if (meta_window.get_workspace() != current_workspace) {
-                    continue;
-                }
+    function updateOpacity(window_hint) {
+        let above_current = new Array();
 
-                if (meta_window == the_window) {
-                    above_current = false;
-                    actor.opacity = 255;
-                    continue;
-                }
-                var mr = meta_window.get_outer_rect();
-                if (above_current && overlaps(r, mr)) {
-                    actor.opacity = 128;
-                } else {
-                    actor.opacity = 255;
-                }
+        global.get_window_actors().forEach(function(wa) {
+            var meta_win = wa.get_meta_window();
+            if (!meta_win) {
+                return;
+            }
+
+            var wksp = meta_win.get_workspace();
+            var wksp_index = wksp.index();
+            var focused_meta_win = wksp._opacify_focused_window;
+
+            if (above_current[wksp_index] && overlaps(focused_meta_win, meta_win)) {
+                setTransparent(wa);
+            } else {
+                setOpaque(wa);
+            }
+            if (meta_win == focused_meta_win) {
+                /* for opacity calculations the window must *not* be
+                 * considered above itself as it obviously overlaps
+                 * itself and would always become transparent,
+                 * so detect the fact *after* setting opacity
+                 */
+                above_current[wksp_index] = true;
             }
         });
+    }
 
-        var on_raised = the_window.connect('raised', reset_opacity);
+    function focus(the_window) {
+        var wksp = the_window.get_workspace();
+        wksp._opacify_focused_window = the_window;
+        updateOpacity(the_window);
+    }
 
-        the_window._opacify = {
-            on_focus: on_focus,
-            on_raised: on_raised
-        };
+    function window_created(__unused_display, the_window) {
+        if (the_window) {
+            the_window._opacify_on_focus = the_window.connect('focus', focus);
+        }
     }
 
     on_window_created = global.display.connect('window-created', window_created);
     global.get_window_actors().forEach(function(wa) {
         window_created(null, wa.get_meta_window());
     });
+
+    on_restacked = global.screen.connect('restacked', updateOpacity);
+    updateOpacity();
 }
 
 function disable() {
     if (on_window_created) {
         global.display.disconnect(on_window_created);
     }
+    if (on_restacked) {
+        global.screen.disconnect(on_restacked);
+    }
     global.get_window_actors().forEach(function(wa) {
         var win = wa.get_meta_window();
-        var handlers = win._opacify;
-        if (handlers) {
-            for (var name in handlers) {
-                win.disconnect(handlers[name]);
-            }
+        if (win && win._opacify_on_focus) {
+            win.disconnect(win._opacify_on_focus);
+            delete win._opacify_on_focus;
         }
         wa.opacity = 255;
     });
