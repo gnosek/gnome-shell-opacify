@@ -20,7 +20,7 @@ var handled_window_types = [
   Meta.WindowType.NOTIFICATION,
   Meta.WindowType.COMBO,
   Meta.WindowType.DND,
-  Meta.WindowType.OVERRIDE_OTHER
+//  Meta.WindowType.OVERRIDE_OTHER
 ];
 
 let on_window_created;
