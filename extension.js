@@ -1,7 +1,9 @@
 const Meta = imports.gi.Meta;
+const Tweener = imports.tweener.tweener;
 
 var opacity_transparent = 128;
 var opacity_opaque = 255;
+var transition_time = 0.2;
 var handled_window_types = [
   Meta.WindowType.NORMAL,
   Meta.WindowType.DESKTOP,
@@ -53,12 +55,31 @@ function enable() {
         return (a_x1 < b_x2 && a_x2 > b_x1 && a_y1 < b_y2 && a_y2 > b_y1);
     }
 
+    function setOpacity(window_actor, target_opacity) {
+        if (transition_time == 0) {
+            window_actor.opacity = target_opacity;
+        } else {
+            if (window_actor._opacify_tweening) {
+                Tweener.removeTweens(window_actor);
+            }
+            window_actor._opacify_tweening = true;
+            Tweener.addTween(window_actor, {
+                time: transition_time,
+                transition: 'easeOutQuad',
+                opacity: target_opacity,
+                onComplete: function() {
+                    delete window_actor._opacify_tweening;
+                }
+            });
+        }
+    }
+
     function setTransparent(window_actor) {
-        window_actor.opacity = opacity_transparent;
+        setOpacity(window_actor, opacity_transparent);
     }
 
     function setOpaque(window_actor) {
-        window_actor.opacity = opacity_opaque;
+        setOpacity(window_actor, opacity_opaque);
     }
 
     function handled_window_type(wtype) {
