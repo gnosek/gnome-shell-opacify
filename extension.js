@@ -58,18 +58,11 @@ function enable() {
     function setOpacity(window_actor, target_opacity) {
         if (transition_time == 0) {
             window_actor.opacity = target_opacity;
-        } else {
-            if (window_actor._opacify_tweening) {
-                Tweener.removeTweens(window_actor);
-            }
-            window_actor._opacify_tweening = true;
+        } else if (window_actor.opacity != target_opacity) {
             Tweener.addTween(window_actor, {
                 time: transition_time,
                 transition: 'easeOutQuad',
                 opacity: target_opacity,
-                onComplete: function() {
-                    delete window_actor._opacify_tweening;
-                }
             });
         }
     }
