@@ -12,4 +12,10 @@ Due to limitations of the Gnome Shell (as of 3.2), the extension is not easily c
 
 to anything you want (0 is invisible, 255 is fully opaque).
 
+You can also control animation speed by setting:
+
+    var transition_time = 0.2;
+
+to whatever value you wish (it's in seconds). You may disable animations completely by setting the time to 0.
+
 Note: This extension will probably break anything else that wants to alter individual windows' opacities by resetting them at every window focus change.
