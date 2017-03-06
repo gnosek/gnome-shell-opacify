@@ -1,5 +1,5 @@
 {
-    "shell-version": ["3.2", "3.4", "3.6", "3.8", "3.10"],
+    "shell-version": ["3.2", "3.4", "3.6", "3.8", "3.10", "3.12", "3.14"],
     "uuid": "Opacify@gnome-shell.localdomain.pl",
     "name": "Opacify",
     "description": "Make inactive windows obscuring the active one transparent",
