@@ -32,13 +32,20 @@ function init() {
 }
 
 function enable() {
+	function get_rect(win) {
+		if (typeof(win.get_frame_rect) !== undefined) {
+			return win.get_frame_rect();
+		}
+		return win.get_outer_rect();
+	}
+
     function overlaps(winA, winB) {
         if (!winA || !winB) {
             return false;
         }
 
-        var rectA = winA.get_outer_rect();
-        var rectB = winB.get_outer_rect();
+        var rectA = get_rect(winA);
+        var rectB = get_rect(winB);
 
         var a_x1 = rectA.x;
         var a_x2 = rectA.x + rectA.width;
