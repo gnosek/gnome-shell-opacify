@@ -63,9 +63,12 @@ function enable() {
     }
 
     function setOpacity(window_actor, target_opacity) {
+        if (window_actor.opacity == target_opacity) {
+            return;
+        }
         if (transition_time == 0) {
             window_actor.opacity = target_opacity;
-        } else if (window_actor.opacity != target_opacity) {
+        } else {
             Tweener.addTween(window_actor, {
                 time: transition_time,
                 transition: 'easeOutQuad',
